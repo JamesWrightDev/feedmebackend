@@ -15,18 +15,27 @@ class FeedController extends Controller
      */
     public function index()
     {
-      $u_feed = Feed::where('id', 1)->get();
-      $feed = Feeds::make('http://www.wsj.com/xml/rss/3_7085.xml');
+      $u_feed = Feed::first();
+      $u_feed_url = $u_feed->feed_url;
+      $feed = Feeds::make($u_feed_url);
       $data = array(
         'title'     => $feed->get_title(),
         'permalink' => $feed->get_permalink(),
         'items'     => $feed->get_items(),
       );
-      $u=array();
-      foreach($data['items'] as $items){
-        array_push($u, $items->get_description());
+      $user_feed=array('user_feed');
+      foreach($data['items'] as $index=>$items){
+          
+        array_push($user_feed, $articles = array(
+            'id'=>$index,
+            'channel' => $data['title'],
+            'title'=>$items->get_title(),
+            'description'=>$items->get_description(),
+            'site_url'=>$items->get_link(),
+            'date' => $items->get_date()
+        ));
       }
-      dd($u);
+      return response($user_feed, 200);
     }
 
     /**
