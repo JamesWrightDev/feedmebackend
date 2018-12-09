@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Feed;
 use Feeds;
+Use SimplePie;
 use Illuminate\Http\Request;
 
 class FeedController extends Controller
@@ -15,26 +16,50 @@ class FeedController extends Controller
      */
     public function index()
     {
-      $u_feed = Feed::first();
-      $u_feed_url = $u_feed->feed_url;
-      $feed = Feeds::make($u_feed_url);
-      $data = array(
-        'title'     => $feed->get_title(),
-        'permalink' => $feed->get_permalink(),
-        'items'     => $feed->get_items(),
-      );
-      $user_feed=array('user_feed');
+        
+        // Access User RSS Feeds
+      $user_feed = Feed::all();
+      $user_feed_url = array();
+      foreach($user_feed as $feed){
+          array_push($user_feed_url, $feed->feed_url);
+      }  
+      
+    //   RSS Parser
+    $url = 'https://www.wired.com/feed/rss';
+    $xml = simplexml_load_file($url,'SimpleXMLElement', LIBXML_NOCDATA);
+    $a = array();
+      foreach($xml->channel->item as $item)
+      {
+        array_push($a, $articles = array(
+            'title' => (string)$item->title,
+            'description' => (string)$item->description,
+            'date' => (string)$item->pubDate,
+            'url' => (string)$item->link,
+        ));
+      }
+
+
+    dd($a);
+    
+    
+     
+
+
+    //   Create new array for parsed RSS feeds
+      $user_feed=array();
+    //   Loop through parsed RSS feeds to create associtive array
       foreach($data['items'] as $index=>$items){
-          
+        //   Add id, Channel, Title, Description, URL and Date to array.
         array_push($user_feed, $articles = array(
             'id'=>$index,
             'channel' => $data['title'],
             'title'=>$items->get_title(),
             'description'=>$items->get_description(),
             'site_url'=>$items->get_link(),
-            'date' => $items->get_date()
+            'date' => $items->get_local_date()
         ));
       }
+    //   Return as JSON with 200 code. 
       return response($user_feed, 200);
     }
 
