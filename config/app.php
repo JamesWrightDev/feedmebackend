@@ -166,6 +166,7 @@ return [
          * Package Service Providers...
          */
         willvincent\Feeds\FeedsServiceProvider::class,
+        Barryvdh\Cors\ServiceProvider::class,
         /*
          * Application Service Providers...
          */

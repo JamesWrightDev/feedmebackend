@@ -67,7 +67,18 @@ class FeedController extends Controller
      */
     public function store(Request $request)
     {
-        return($request->all());
+        // Veryify url
+
+        // Create new feed entry in DB. 
+
+        $feed = new Feed;
+        $feed->feed_name = $request['name'];
+        $feed->feed_url = $request['feed_url'];
+        $feed->save();
+        
+        return('Suc');
+
+
     }
 
     /**
