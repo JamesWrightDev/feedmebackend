@@ -25,42 +25,28 @@ class FeedController extends Controller
       }  
       
     //   RSS Parser
-    $url = 'https://www.wired.com/feed/rss';
-    $xml = simplexml_load_file($url,'SimpleXMLElement', LIBXML_NOCDATA);
+    $url = $user_feed_url;
     $a = array();
-      foreach($xml->channel->item as $item)
-      {
-        array_push($a, $articles = array(
-            'title' => (string)$item->title,
-            'description' => (string)$item->description,
-            'date' => (string)$item->pubDate,
-            'url' => (string)$item->link,
-        ));
-      }
+    foreach($user_feed_url as $url)
+        {
+            $xml = simplexml_load_file($url,'SimpleXMLElement', LIBXML_NOCDATA);
+            foreach($xml->channel->item as $item)
+                {
+                    array_push($a, $articles = array(
+                        'outlet'=> (string)$xml->channel->title,
+                        'title' => (string)$item->title,
+                        'description' => (string)$item->description,
+                        'date' => (string)$item->pubDate,
+                        'link' => (string)$item->link,
+                        ));
+                }
+        }
+      
 
 
-    dd($a);
     
-    
-     
-
-
-    //   Create new array for parsed RSS feeds
-      $user_feed=array();
-    //   Loop through parsed RSS feeds to create associtive array
-      foreach($data['items'] as $index=>$items){
-        //   Add id, Channel, Title, Description, URL and Date to array.
-        array_push($user_feed, $articles = array(
-            'id'=>$index,
-            'channel' => $data['title'],
-            'title'=>$items->get_title(),
-            'description'=>$items->get_description(),
-            'site_url'=>$items->get_link(),
-            'date' => $items->get_local_date()
-        ));
-      }
     //   Return as JSON with 200 code. 
-      return response($user_feed, 200);
+      return response($a, 200);
     }
 
     /**
@@ -81,7 +67,7 @@ class FeedController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return($request->all());
     }
 
     /**

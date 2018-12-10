@@ -72,6 +72,7 @@ class RouteServiceProvider extends ServiceProvider
         ], function ($router) {
              //Add you routes here, for example:
                 Route::get('/feed', 'FeedController@index');
+                Route::post('/feed/new', 'FeedController@store');
         });
         
     }
