@@ -17,33 +17,46 @@ class FeedController extends Controller
 
     public function index(Request $request)
     {
+        $results = array(
+            'articles' => array(),
+            'outlets' => array(),
+        );
+
         $user_feed = Feed::all();
         $user_feed_url = array();
         $user_feed_name = array();
             foreach($user_feed as $feed){
-                array_push($user_feed_url, $feed->feed_url);
-                array_push($user_feed_name, $feed->feed_name);
+                array_push($user_feed_url, $feed->feed_url);    
+                array_push($results['outlets'], $feed->feed_name);
             }  
 
-
         // Simple Pie
-        $results= array();
-        $feed = Feeds::make($user_feed_url);
-        $data = array(
-            'title'     => $feed->get_title(),
-            'permalink' => $feed->get_permalink(),
-            'items'     => $feed->get_items(),
-          );
-          foreach($data['items'] as $i){
-              array_push($results, $articles = array(
-                  
-                  'title' => $i->get_title(),
-                  'description' => $i->get_description(),
-                  'link' => $i->get_link(),
-                  'date' => $i->get_date(),
+        
+        
+        foreach($user_feed_url as $feed){
+            $feed = Feeds::make($feed);
 
-              ));
-          }
+            
+            $data = array(
+                'title'     => $feed->get_title(),
+                'permalink' => $feed->get_permalink(),
+                'items'     => $feed->get_items(),
+              );
+            foreach($data['items'] as $i){
+                
+                 
+            array_push($results['articles'], $articles = array(
+                    'outlet' => $data['title'],
+                    'title' => $i->get_title(),
+                    'description' => $i->get_description(),
+                    'link' => $i->get_link(),
+                    'date' => $i->get_date(),
+                ));
+            }
+        }
+
+
+          
           return response($results);
 
 
@@ -119,11 +132,12 @@ class FeedController extends Controller
                 if(substr($result, 0, 5) !== "<?xml") {
                     abort(403,'Not valid RSS'); 
                 } 
-            $xml = simplexml_load_file($feed_url,'SimpleXMLElement', LIBXML_NOCDATA);
-            
+                
+            $feed_item = Feeds::make($feed_url);
             curl_close($cSession);
+  
                 $feed = new Feed;
-                $feed->feed_name = $xml->channel->title;
+                $feed->feed_name = $feed_item->get_title();
                 $feed->feed_url = $feed_url;
                 $feed->save();
             return('Feed added');
@@ -137,9 +151,37 @@ class FeedController extends Controller
      * @param  \App\Feed  $feed
      * @return \Illuminate\Http\Response
      */
-    public function show(Feed $feed)
+    public function show($feed_id)
     {
         //
+        $user_feed = Feed::find($feed_id);
+        $user_feed_url = $user_feed->feed_url;
+
+        $results = array(
+            'articles' => array(),
+            'outlets' => array(),
+        );
+
+        $feed = Feeds::make($user_feed_url);
+
+        $data = array(
+            'title'     => $feed->get_title(),
+            'permalink' => $feed->get_permalink(),
+            'items'     => $feed->get_items(),
+            );
+        foreach($data['items'] as $i){
+            
+                
+        array_push($results['articles'], $articles = array(
+                'outlet' => $data['title'],
+                'title' => $i->get_title(),
+                'description' => $i->get_description(),
+                'link' => $i->get_link(),
+                'date' => $i->get_date(),
+            ));
+        }
+        return $results;
+
     }
 
     /**
@@ -162,7 +204,7 @@ class FeedController extends Controller
      */
     public function update(Request $request, Feed $feed)
     {
-        //
+        
     }
 
     /**
